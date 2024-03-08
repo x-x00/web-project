@@ -1,4 +1,7 @@
 const mysql = require('mysql2');
+const express = require('express');
+
+const app = express();
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -13,4 +16,11 @@ connection.connect((err) => {
     else console.log("connected to database successfully.");
 });
 
-
+app.get('/', function (req, res) {
+    connection.query({sql: "SELECT * FROM sehirler"}, (err, results) => {
+        if(err) res.send(err);
+        else res.send(results);
+    });
+  });
+  
+app.listen(3000);
