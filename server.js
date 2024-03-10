@@ -13,7 +13,7 @@ app.use(express.static("public"));
 const connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
-    database: "mydb2",
+    database: "phonedb",
     user: "root",
     password: "1234"
 });
@@ -24,7 +24,11 @@ connection.connect((err) => {
 });
 
 app.route('/').get((req, res) => {
-    res.render('shop');
+    connection.query({sql: `SELECT CONCAT(brands.brand, ' ', products.model) as title, CONCAT(products.price, ' TL') as price, products.image FROM brands JOIN products ON brands.brand_id=products.brand_id`}, (err, products) => {
+        if(err) console.log(err);
+        else res.render('shop', {products: products});
+    });
+    
 });
 
 app.route('/cart').get((req, res) => {
