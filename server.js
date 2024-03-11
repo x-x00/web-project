@@ -116,7 +116,17 @@ app.route('/cart').get((req, res) => {
 });
 
 app.route('/checkout').get((req, res) => {
-    res.render('checkout');
+    connection.query({sql: `SELECT CONCAT(brands.brand, ' ', products.model) as product, cart_items.quantity as quantity, cart_items.total as total FROM ((products JOIN brands ON products.brand_id=brands.brand_id) JOIN cart_items ON products.product_id=cart_items.product_id) WHERE cart_id='${req.cookies.cart_id}'`}, (err, cartItems) => {
+        if(err) {
+            console.log(err);
+        }
+        else {
+            connection.query({sql: `SELECT CONCAT(SUM(total), ' ', 'TL') as total_price FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, totalPrice) => {
+                if(err) console.log(err);
+                else res.render('checkout', {cartItems: cartItems, totalPrice: totalPrice[0].total_price});
+            });
+        }
+    });
 });
 
 app.route('/thankyou').get((req, res) => {
