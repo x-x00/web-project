@@ -41,8 +41,9 @@ app.route('/').get((req, res) => {
         else res.render('shop', {products: products});
     });
     if(!req.cookies.cart_id){
+        //implement something to delete cart_items having an expired cookie.
         const cookie = uuidv4();
-        res.cookie('cart_id', cookie, {expires: new Date(Date.now() + 600000)});
+        res.cookie('cart_id', cookie, {expires: new Date(Date.now() + 100000)}); // 100 seconds, 1 minute and 40 seconds.
     }
     
 }).post((req, res) => {
@@ -54,29 +55,34 @@ app.route('/').get((req, res) => {
         let isProductExistsForThatCustomer = false;
         //hepsi if(req.cookies.cart_id) nin ic kismina koyulabilir.
         for (let i = 0; i < arr.length; i++) {
-            console.log(arr[i].cart_id);
+            // console.log(arr[i].cart_id);
             if(arr[i].cart_id === req.cookies.cart_id) {
                 isCustomerExists = true;
                 break;
             } 
         };
         if(isCustomerExists){
-            console.log(`product id: ${selectedProductID}`);
+            // console.log(`product id: ${selectedProductID}`);
             connection.query({sql: `SELECT product_id FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
                 for (let i = 0; i < arr.length; i++) {
-                    console.log(arr[i].product_id);
+                    // console.log(arr[i].product_id);
                     if(arr[i].product_id == selectedProductID) {
                         isProductExistsForThatCustomer = true;
                         break;
                     } 
                 };
                 if(isProductExistsForThatCustomer){
-                    connection.query({sql: `SELECT quantity FROM cart_items WHERE cart_id='${req.cookies.cart_id}' AND product_id=${selectedProductID}`}, (err, arr) => {
-                        let quantity = arr[0].quantity;
-                        connection.query({sql: `UPDATE cart_items SET quantity=${++quantity}, total=${quantity * selectedProductPrice} WHERE cart_id='${req.cookies.cart_id}' AND product_id=${selectedProductID}`}, (err, arr) => {
-                            if(err) console.log(err);
-                            else console.log('updated successfully.')
-                        });
+                    connection.query({sql: `SELECT products.stock_quantity as stockQuantity, cart_items.quantity as cartQuantity FROM products JOIN cart_items ON products.product_id=cart_items.product_id WHERE cart_items.cart_id='${req.cookies.cart_id}' AND cart_items.product_id=${selectedProductID}`}, (err, arr) => {
+                        let cartQuantity = arr[0].cartQuantity;
+                        const stockQuantity = arr[0].stockQuantity;
+                        if(cartQuantity < stockQuantity){
+                            connection.query({sql: `UPDATE cart_items SET quantity=${++cartQuantity}, total=${cartQuantity * selectedProductPrice} WHERE cart_id='${req.cookies.cart_id}' AND product_id=${selectedProductID}`}, (err, arr) => {
+                                if(err) console.log(err);
+                                else console.log('updated successfully.')
+                            });
+                        }else{
+                            console.log('Cant exceed stock.');
+                        }
                     });
                 }else{
                     connection.query({sql: `INSERT INTO cart_items (cart_id, product_id, quantity, total) VALUES ('${req.cookies.cart_id}', ${selectedProductID}, 1, ${selectedProductPrice})`}, (err, arr) => {
@@ -95,8 +101,18 @@ app.route('/').get((req, res) => {
 });
 
 app.route('/cart').get((req, res) => {
-    res.render('cart');
-    console.log(req.cookies.cart_id);
+    connection.query({sql: `SELECT products.image as image, CONCAT(brands.brand, ' ', products.model) as product, products.price as price, cart_items.quantity as quantity, cart_items.total as total FROM ((products JOIN brands ON products.brand_id=brands.brand_id) JOIN cart_items ON products.product_id=cart_items.product_id) WHERE cart_id='${req.cookies.cart_id}'`}, (err, cartItems) => {
+        if(err) {
+            console.log(err);
+        }
+        else {
+            connection.query({sql: `SELECT CONCAT(SUM(total), ' ', 'TL') as total_price FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, totalPrice) => {
+                if(err) console.log(err);
+                else res.render('cart', {cartItems: cartItems, totalPrice: totalPrice[0].total_price});
+            });
+        }
+    });
+    // console.log(req.cookies.cart_id);
 });
 
 app.route('/checkout').get((req, res) => {
