@@ -18,6 +18,7 @@
     "jquery": "^3.7.1",
     "mysql": "^2.18.1",
     "mysql2": "^3.9.2",
+    "turkey-neighbourhoods": "^3.1.0",
     "uuid": "^9.0.1"
   }
 }

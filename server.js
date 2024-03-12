@@ -27,7 +27,7 @@ const connection = mysql.createConnection({
     port: 3306,
     database: "phonedb",
     user: "root",
-    password: "1234"
+    password: "1234" //can be changed with .env for safety.
 });
 
 connection.connect((err) => {
@@ -127,6 +127,8 @@ app.route('/checkout').get((req, res) => {
             });
         }
     });
+}).post((req, res) => {
+    
 });
 
 app.route('/thankyou').get((req, res) => {
