@@ -13,6 +13,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+//TODO: .env, adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart.
+
 // app.use(session({
 //     secret: 'mysecretkey',
 //     resave: false,
@@ -128,7 +130,81 @@ app.route('/checkout').get((req, res) => {
         }
     });
 }).post((req, res) => {
-    
+    //customer -> address -> orders -> ordersproducts (order_id cant be primary in ordersproducts, use a loop to insert multiple times. )
+    if(req.cookies.cart_id){
+        const first_name = req.body.c_fname;
+        const last_name = req.body.c_lname;
+        const email = req.body.c_email_address;
+        const phone_number = req.body.c_phone;
+        const city = req.body.c_city;
+        const district = req.body.c_district;
+        const neighborhood = req.body.c_neighborhood;
+        const address = req.body.c_address;
+        // console.log(c_fname, c_lname, c_email_address, c_phone, c_city, c_district, c_neighborhood, c_address);
+        connection.query({sql: `INSERT INTO customers (first_name, last_name, email, phone_number) VALUES ('${first_name}', '${last_name}', '${email}', '${phone_number}')`}, (err, arr) => {
+            if(err) {
+                console.log(err);
+            }else{
+                console.log('inserted successfully to customers.');
+                connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_customer_id`}, (err, arr) => {
+                    if(err){
+                        console.log(err);
+                    }else{
+                        console.log('last customer id is saved to last_customer_id variable.');
+                        connection.query({sql: `INSERT INTO addresses (customer_id, city, district, neighborhood, address) 
+                        VALUES(LAST_INSERT_ID(),'${city}', '${district}', '${neighborhood}', '${address}')`}, (err, arr) => {
+                            if(err){
+                                console.log(err);
+                            }else{
+                                console.log(`inserted successfully to address.`);
+                                connection.query({sql: `INSERT INTO orders (customer_id, total_quantity, total_price, order_date)
+                                VALUES (@last_customer_id, (SELECT SUM(quantity) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), (SELECT SUM(total) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), CURRENT_DATE())`}, (err, arr) => {
+                                    if(err){
+                                        console.log(err);
+                                    }else{
+                                        console.log('inserted successfully to orders');
+                                        connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_order_id`}, (err, arr) => {
+                                            if(err){
+                                                console.log(err);
+                                            }else{
+                                                console.log('last order id is saved to last_order_id variable.');
+                                                connection.query({sql: `SELECT product_id, quantity, total FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
+                                                    if(err){
+                                                        console.log(err);
+                                                    }else{
+                                                        arr.forEach(e => {
+                                                            connection.query({sql: `INSERT INTO ordersproducts (order_id, product_id, quantity, total)
+                                                            VALUES (@last_order_id, ${e.product_id}, ${e.quantity}, ${e.total})`}, (err, arr) => {
+                                                                if(err){
+                                                                    console.log(err);
+                                                                }else{
+                                                                    console.log('inserted to orderproducts successfully.');
+                                                                }
+                                                            });
+                                                        });
+                                                        connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
+                                                            if(err){
+                                                                console.log(err);
+                                                            }else{
+                                                                console.log('cart_id with corresponding cookie successfully deleted.');
+                                                                res.redirect('/thankyou');
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        })
+                    }
+                });
+            }
+        });
+    }else{
+        res.redirect('/');
+    }
 });
 
 app.route('/thankyou').get((req, res) => {
