@@ -13,7 +13,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: .env, adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart.
+//TODO: .env, adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart,
+// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, delete from cart.
 
 // app.use(session({
 //     secret: 'mysecretkey',
@@ -103,7 +104,7 @@ app.route('/').get((req, res) => {
 });
 
 app.route('/cart').get((req, res) => {
-    connection.query({sql: `SELECT products.image as image, CONCAT(brands.brand, ' ', products.model) as product, products.price as price, cart_items.quantity as quantity, cart_items.total as total FROM ((products JOIN brands ON products.brand_id=brands.brand_id) JOIN cart_items ON products.product_id=cart_items.product_id) WHERE cart_id='${req.cookies.cart_id}'`}, (err, cartItems) => {
+    connection.query({sql: `SELECT products.image as image, CONCAT(brands.brand, ' ', products.model) as product, products.price as price, cart_items.quantity as quantity, cart_items.total as total, products.product_id as product_id FROM ((products JOIN brands ON products.brand_id=brands.brand_id) JOIN cart_items ON products.product_id=cart_items.product_id) WHERE cart_id='${req.cookies.cart_id}'`}, (err, cartItems) => {
         if(err) {
             console.log(err);
         }
@@ -115,6 +116,29 @@ app.route('/cart').get((req, res) => {
         }
     });
     // console.log(req.cookies.cart_id);
+}).post((req, res) => {
+    const removeProductID = req.body.deleteButton;
+    const updatedQuantity = req.body.updatedQuantity;
+    const submitClicked = req.body.submitClicked;
+    if(req.cookies.cart_id){
+        if(submitClicked === 'plusButton'){
+            console.log('update cart increase.');
+        }else if(submitClicked === 'minusButton'){
+            console.log('update cart decrease.');
+        }else if(submitClicked === 'deleteButton'){
+            connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}' AND product_id=${removeProductID}`}, (err, arr) => {
+                if(err) {
+                    console.log(err);
+                }else{
+                    console.log('successfully deleted from cart.');
+                    res.redirect('/cart');
+                }
+            });
+        }
+    }
+    else{
+        res.redirect('/cart');
+    }
 });
 
 app.route('/checkout').get((req, res) => {

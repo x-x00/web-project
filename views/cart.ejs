@@ -94,7 +94,8 @@
                         </tr>
                       </thead>
                       <tbody>
-						<% cartItems.forEach(item => { %> 
+						<% cartItems.forEach(item => { %>
+					   <form action="/cart" method="post">
                         <tr>
                           <td class="product-thumbnail">
                             <img src="<%= item.image %>" alt="Image" class="img-fluid">
@@ -104,20 +105,25 @@
                           </td>
                           <td><%= item.price %></td>
                           <td>
+							
                             <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
                               <div class="input-group-prepend">
-                                <button class="btn btn-outline-black decrease" type="button">&minus;</button>
+                                <button class="btn btn-outline-black decrease" type="submit" name="minusButton" onclick="submitClick(this);">&minus;</button>
                               </div>
-                              <input type="text" class="form-control text-center quantity-amount" value="<%= item.quantity %>" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                              <input type="text" class="form-control text-center quantity-amount" name="updatedQuantity" value="<%= item.quantity %>" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                               <div class="input-group-append">
-                                <button class="btn btn-outline-black increase" type="button">&plus;</button>
+                                <button class="btn btn-outline-black increase" type="submit" name="plusButton" onclick="submitClick(this);">&plus;</button>
                               </div>
                             </div>
         
                           </td>
                           <td><%= item.total %></td>
-                          <td><a href="#" class="btn btn-black btn-sm">X</a></td>
+                          <td><button type="submit" class="btn btn-black btn-sm" name="deleteButton" value="<%= item.product_id %>" onclick="submitClick(this)">X</button></td>
+						  <input type="hidden" name="submitClicked" value="">
+						  <!-- <td><a href="/cart" target="_self" type="button" class="btn btn-black btn-sm" onclick="document.forms.removeFromCart.submit()">X</a></td> -->
+						  <!-- <input type="hidden" name="removeProductID" value="<%= item.product_id %>"> -->
                         </tr>
+					   </form>
 						<% }); %>
                       </tbody>
                     </table>
@@ -296,6 +302,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.2/min/tiny-slider.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" integrity="sha512-GWzVrcGlo0TxTRvz9ttioyYJ+Wwk9Ck0G81D+eO63BaqHaJ3YZX9wuqjwgfcV/MrB2PhaVX9DkYVhbFpStnqpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<script src="js/custom.js"></script>
+		<script src="js/cart.js"></script>
 	</body>
 
 </html>
