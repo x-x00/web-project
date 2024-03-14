@@ -52,6 +52,7 @@ app.route('/').get((req, res) => {
 }).post((req, res) => {
     const selectedProductID = req.body.selectedProductID;
     const selectedProductPrice = parseInt(req.body.selectedProductPrice);
+    console.log(typeof(selectedProductID));
 
     connection.query({sql: `SELECT cart_id FROM cart_items`}, (err, arr) => {
         let isCustomerExists = false;
@@ -117,16 +118,44 @@ app.route('/cart').get((req, res) => {
     });
     // console.log(req.cookies.cart_id);
 }).post((req, res) => {
-    const removeProductID = req.body.deleteButton;
-    const updatedQuantity = req.body.updatedQuantity;
+    //mysql automatically parses string to int to prevent complications, so the productID will be a int whether parsing it to int or not.
+    const productID = parseInt(req.body.productID);
+    const updatedQuantity = parseInt(req.body.updatedQuantity);
     const submitClicked = req.body.submitClicked;
+    const selectedProductPrice = parseInt(req.body.selectedProductPrice);
     if(req.cookies.cart_id){
-        if(submitClicked === 'plusButton'){
-            console.log('update cart increase.');
-        }else if(submitClicked === 'minusButton'){
-            console.log('update cart decrease.');
+        if(submitClicked === 'plusButton' || submitClicked === 'minusButton'){
+            connection.query({sql: `SELECT stock_quantity FROM products WHERE product_id=${productID}`}, (err, arr) => {
+                if(err){
+                    console.log(err);
+                }else{
+                    const stockQuantity = arr[0].stock_quantity;
+                    if(updatedQuantity === 0) {
+                        connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}' AND product_id=${productID}`}, (err, arr) => {
+                            if(err) {
+                                console.log(err);
+                            }else{
+                                console.log('successfully deleted from cart, quantity = 0');
+                                res.redirect('/cart');
+                            }
+                        });
+                    }else if(updatedQuantity <= stockQuantity){
+                        connection.query({sql: `UPDATE cart_items SET quantity=${updatedQuantity}, total=${updatedQuantity * selectedProductPrice} WHERE cart_id='${req.cookies.cart_id}' AND product_id=${productID}`}, (err, arr) => {
+                            if(err){
+                                console.log(err);
+                            }else{
+                                console.log('successfully updated the cart.');
+                                res.redirect('/cart');
+                            }
+                        });
+                    }else{
+                        console.log('cant exceed stock.')
+                        res.redirect('/cart');
+                    }
+                }
+            });
         }else if(submitClicked === 'deleteButton'){
-            connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}' AND product_id=${removeProductID}`}, (err, arr) => {
+            connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}' AND product_id=${productID}`}, (err, arr) => {
                 if(err) {
                     console.log(err);
                 }else{

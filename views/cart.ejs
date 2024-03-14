@@ -118,8 +118,10 @@
         
                           </td>
                           <td><%= item.total %></td>
-                          <td><button type="submit" class="btn btn-black btn-sm" name="deleteButton" value="<%= item.product_id %>" onclick="submitClick(this)">X</button></td>
+                          <td><button type="submit" class="btn btn-black btn-sm" name="deleteButton" onclick="submitClick(this)">X</button></td>
 						  <input type="hidden" name="submitClicked" value="">
+						  <input type="hidden" name="selectedProductPrice" value="<%= item.price %>">
+						  <input type="hidden" name="productID" value="<%= item.product_id %>">
 						  <!-- <td><a href="/cart" target="_self" type="button" class="btn btn-black btn-sm" onclick="document.forms.removeFromCart.submit()">X</a></td> -->
 						  <!-- <input type="hidden" name="removeProductID" value="<%= item.product_id %>"> -->
                         </tr>
