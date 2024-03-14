@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
+require('dotenv').config()
 
 const app = express();
 
@@ -13,7 +14,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: .env, adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart,
+//TODO: adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart,
 // database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
 // change stock_quantity when order is complete.
 
@@ -31,7 +32,7 @@ const connection = mysql.createConnection({
     port: 3306,
     database: "phonedb",
     user: "root",
-    password: "1234" //can be changed with .env for safety.
+    password: process.env.DATABASE_PASSWORD
 });
 
 connection.connect((err) => {
