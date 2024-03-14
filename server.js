@@ -14,7 +14,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 //TODO: .env, adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart,
-// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, delete from cart.
+// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
+// change stock_quantity when order is complete.
 
 // app.use(session({
 //     secret: 'mysecretkey',
@@ -232,6 +233,13 @@ app.route('/checkout').get((req, res) => {
                                                                     console.log(err);
                                                                 }else{
                                                                     console.log('inserted to orderproducts successfully.');
+                                                                    connection.query({sql: `UPDATE products as p1 JOIN products as p2 ON p1.product_id=p2.product_id SET p1.stock_quantity=(p2.stock_quantity - ${e.quantity}) WHERE p1.product_id=${e.product_id}`}, (err, arr) => {
+                                                                        if(err){
+                                                                            console.log(err);
+                                                                        }else{
+                                                                            console.log('stock quantity updated on products table.');
+                                                                        }
+                                                                    });
                                                                 }
                                                             });
                                                         });
