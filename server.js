@@ -14,9 +14,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: adjust buttons to correctly direct the customer, item adding in shop, address city, district... , delete expired cookie cart,
+//TODO: item adding in shop, address city, district... , delete expired cookie cart,
 // database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
-// change stock_quantity when order is complete.
 
 // app.use(session({
 //     secret: 'mysecretkey',
