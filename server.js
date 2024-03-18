@@ -14,8 +14,9 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: item adding in shop, address city, district... , delete expired cookie cart,
+//TODO: address city, district... , delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
 // database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
+// payment, city (get le yolla, digerlirine de post la alip tekrar gonder ?) cookie ile token ?
 
 // app.use(session({
 //     secret: 'mysecretkey',
@@ -45,7 +46,8 @@ app.route('/').get((req, res) => {
         else res.render('shop', {products: products});
     });
     if(!req.cookies.cart_id){
-        //implement something to delete cart_items having an expired cookie.
+        //implement something to delete cart_items having an expired cookie, or create a script with python that deletes cart_items
+        //older than one day automatically in database server. (not working, use date instead on db.)
         const cookie = uuidv4();
         res.cookie('cart_id', cookie, {expires: new Date(Date.now() + 100000)}); // 100 seconds, 1 minute and 40 seconds.
     }
@@ -53,56 +55,67 @@ app.route('/').get((req, res) => {
 }).post((req, res) => {
     const selectedProductID = req.body.selectedProductID;
     const selectedProductPrice = parseInt(req.body.selectedProductPrice);
-    console.log(typeof(selectedProductID));
 
-    connection.query({sql: `SELECT cart_id FROM cart_items`}, (err, arr) => {
-        let isCustomerExists = false;
-        let isProductExistsForThatCustomer = false;
-        //hepsi if(req.cookies.cart_id) nin ic kismina koyulabilir.
-        for (let i = 0; i < arr.length; i++) {
-            // console.log(arr[i].cart_id);
-            if(arr[i].cart_id === req.cookies.cart_id) {
-                isCustomerExists = true;
-                break;
-            } 
-        };
-        if(isCustomerExists){
-            // console.log(`product id: ${selectedProductID}`);
-            connection.query({sql: `SELECT product_id FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
-                for (let i = 0; i < arr.length; i++) {
-                    // console.log(arr[i].product_id);
-                    if(arr[i].product_id == selectedProductID) {
-                        isProductExistsForThatCustomer = true;
-                        break;
-                    } 
-                };
-                if(isProductExistsForThatCustomer){
-                    connection.query({sql: `SELECT products.stock_quantity as stockQuantity, cart_items.quantity as cartQuantity FROM products JOIN cart_items ON products.product_id=cart_items.product_id WHERE cart_items.cart_id='${req.cookies.cart_id}' AND cart_items.product_id=${selectedProductID}`}, (err, arr) => {
-                        let cartQuantity = arr[0].cartQuantity;
-                        const stockQuantity = arr[0].stockQuantity;
-                        if(cartQuantity < stockQuantity){
-                            connection.query({sql: `UPDATE cart_items SET quantity=${++cartQuantity}, total=${cartQuantity * selectedProductPrice} WHERE cart_id='${req.cookies.cart_id}' AND product_id=${selectedProductID}`}, (err, arr) => {
-                                if(err) console.log(err);
-                                else console.log('updated successfully.')
-                            });
-                        }else{
-                            console.log('Cant exceed stock.');
-                        }
-                    });
-                }else{
-                    connection.query({sql: `INSERT INTO cart_items (cart_id, product_id, quantity, total) VALUES ('${req.cookies.cart_id}', ${selectedProductID}, 1, ${selectedProductPrice})`}, (err, arr) => {
-                        if(err) console.log(err);
-                        else console.log('inserted successfully.')
-                    });
-                }
-            });
-        }else{
-            connection.query({sql: `INSERT INTO cart_items (cart_id, product_id, quantity, total) VALUES ('${req.cookies.cart_id}', ${selectedProductID}, 1, ${selectedProductPrice})`}, (err, arr) => {
-                if(err) console.log(err);
-                else console.log('inserted successfully.');
-            });
-        }
-    });
+    if(req.cookies.cart_id){
+        connection.query({sql: `SELECT cart_id FROM cart_items`}, (err, arr) => {
+            let isCustomerExists = false;
+            let isProductExistsForThatCustomer = false;
+            for (let i = 0; i < arr.length; i++) {
+                if(arr[i].cart_id === req.cookies.cart_id) {
+                    isCustomerExists = true;
+                    break;
+                } 
+            };
+            if(isCustomerExists){
+                connection.query({sql: `SELECT product_id FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
+                    for (let i = 0; i < arr.length; i++) {
+                        if(arr[i].product_id == selectedProductID) {
+                            isProductExistsForThatCustomer = true;
+                            break;
+                        } 
+                    };
+                    if(isProductExistsForThatCustomer){
+                        connection.query({sql: `SELECT products.stock_quantity as stockQuantity, cart_items.quantity as cartQuantity FROM products JOIN cart_items ON products.product_id=cart_items.product_id WHERE cart_items.cart_id='${req.cookies.cart_id}' AND cart_items.product_id=${selectedProductID}`}, (err, arr) => {
+                            let cartQuantity = arr[0].cartQuantity;
+                            const stockQuantity = arr[0].stockQuantity;
+                            if(cartQuantity < stockQuantity){
+                                connection.query({sql: `UPDATE cart_items SET quantity=${++cartQuantity}, total=${cartQuantity * selectedProductPrice} WHERE cart_id='${req.cookies.cart_id}' AND product_id=${selectedProductID}`}, (err, arr) => {
+                                    if(err) {
+                                        console.log(err);
+                                    }else{
+                                        console.log('updated successfully.');
+                                        res.redirect('/');
+                                    }
+                                });
+                            }else{
+                                console.log('Cant exceed stock.');
+                            }
+                        });
+                    }else{
+                        connection.query({sql: `INSERT INTO cart_items (cart_id, product_id, quantity, total) VALUES ('${req.cookies.cart_id}', ${selectedProductID}, 1, ${selectedProductPrice})`}, (err, arr) => {
+                            if(err) {
+                                console.log(err);
+                            }else{
+                                console.log('inserted successfully.');
+                                res.redirect('/');
+                            }
+                        });
+                    }
+                });
+            }else{
+                connection.query({sql: `INSERT INTO cart_items (cart_id, product_id, quantity, total) VALUES ('${req.cookies.cart_id}', ${selectedProductID}, 1, ${selectedProductPrice})`}, (err, arr) => {
+                    if(err) {
+                        console.log(err);
+                    }else{
+                        console.log('inserted successfully.');
+                        res.redirect('/');
+                    }
+                });
+            }
+        });
+    }else{
+        res.redirect('/');
+    }
 });
 
 app.route('/cart').get((req, res) => {

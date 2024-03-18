@@ -116,18 +116,27 @@
 					<div class="form-group row">
 						<div class="col-md-12">
 						  <label for="c_city" class="text-black">City <span class="text-danger">*</span></label>
-						  <input type="text" class="form-control" id="c_city" name="c_city">
+						  <select class="form-control" name="c_city" id="c_city" onchange="loadDistricts(this);">
+							<option value="">Choose a City</option>
+						  </select>
+						  <!-- <input type="text" class="form-control" id="c_city" name="c_city"> -->
 						</div>
 					  </div>
 
 					  <div class="form-group row">
 						<div class="col-md-6">
 						  <label for="c_district" class="text-black">District <span class="text-danger">*</span></label>
-						  <input type="text" class="form-control" id="c_district" name="c_district">
+						  <select class="form-control" name="c_district" id="c_district" onchange="loadNeighborhoods(this);">
+							<option value="">Choose a District</option>
+						  </select>
+						  <!-- <input type="text" class="form-control" id="c_district" name="c_district"> -->
 						</div>
 						<div class="col-md-6">
 						  <label for="c_neighborhood" class="text-black">Neighborhood <span class="text-danger">*</span></label>
-						  <input type="text" class="form-control" id="c_neighborhood" name="c_neighborhood">
+						  <select class="form-control" name="c_neighborhood" id="c_neighborhood">
+							<option value="">Choose a Neighborhood</option>
+						  </select>
+						  <!-- <input type="text" class="form-control" id="c_neighborhood" name="c_neighborhood"> -->
 						</div>
 					  </div>
 
@@ -341,10 +350,6 @@
 		<footer class="footer-section">
 			<div class="container relative">
 
-				<div class="sofa-img">
-					<img src="images/sofa.png" alt="Image" class="img-fluid">
-				</div>
-
 				<div class="row g-5 mb-5">
 					<div class="col-lg-4">
 						<div class="mb-4 footer-logo-wrap"><a href="#" class="footer-logo">Phone Hell<span>.</span></a></div>
@@ -424,6 +429,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/tiny-slider/2.9.2/min/tiny-slider.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js" integrity="sha512-GWzVrcGlo0TxTRvz9ttioyYJ+Wwk9Ck0G81D+eO63BaqHaJ3YZX9wuqjwgfcV/MrB2PhaVX9DkYVhbFpStnqpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 		<script src="js/custom.js"></script>
+		<script src="js/checkout.js"></script>
 		<!-- <script src="js/main.js"></script> -->
 	</body>
 
