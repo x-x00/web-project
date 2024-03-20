@@ -15,8 +15,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 //TODO: delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
-// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
-// payment(with test cards), required fields, product details page (custom routes?).
+// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), dynamically update the page.
+// payment(with test cards), product details page (custom routes?), check customers who has a cookie but nothing in the cart.
 
 // app.use(session({
 //     secret: 'mysecretkey',
@@ -114,6 +114,7 @@ app.route('/').get((req, res) => {
             }
         });
     }else{
+        console.log('cookie expired.');
         res.redirect('/');
     }
 });
@@ -130,7 +131,6 @@ app.route('/cart').get((req, res) => {
             });
         }
     });
-    // console.log(req.cookies.cart_id);
 }).post((req, res) => {
     //mysql automatically parses string to int to prevent complications, so the productID will be a int whether parsing it to int or not.
     const productID = parseInt(req.body.productID);
@@ -180,6 +180,7 @@ app.route('/cart').get((req, res) => {
         }
     }
     else{
+        console.log('cookie expired.');
         res.redirect('/cart');
     }
 });
@@ -198,87 +199,99 @@ app.route('/checkout').get((req, res) => {
     });
 }).post((req, res) => {
     if(req.cookies.cart_id){
-        const first_name = req.body.c_fname;
-        const last_name = req.body.c_lname;
-        const email = req.body.c_email_address;
-        const phone_number = req.body.c_phone;
-        const neighborhood = req.body.c_neighborhood;
-        const address = req.body.c_address;
-
-        fetch(`https://turkiyeapi.dev/api/v1/neighborhoods/${neighborhood}`).then((response) => response.json()).then((data) => {
-            // console.log(data.data.province);
-            // console.log(data.data.district);
-            // console.log(data.data.name);
-            connection.query({sql: `INSERT INTO customers (first_name, last_name, email, phone_number) VALUES ('${first_name}', '${last_name}', '${email}', '${phone_number}')`}, (err, arr) => {
-                if(err) {
-                    console.log(err);
-                }else{
-                    console.log('inserted successfully to customers.');
-                    connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_customer_id`}, (err, arr) => {
-                        if(err){
-                            console.log(err);
-                        }else{
-                            console.log('last customer id is saved to last_customer_id variable.');
-                            connection.query({sql: `INSERT INTO addresses (customer_id, city, district, neighborhood, address) 
-                            VALUES(LAST_INSERT_ID(),'${data.data.province}', '${data.data.district}', '${data.data.name}', '${address}')`}, (err, arr) => {
-                                if(err){
-                                    console.log(err);
-                                }else{
-                                    console.log(`inserted successfully to address.`);
-                                    connection.query({sql: `INSERT INTO orders (customer_id, total_quantity, total_price, order_date)
-                                    VALUES (@last_customer_id, (SELECT SUM(quantity) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), (SELECT SUM(total) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), CURRENT_DATE())`}, (err, arr) => {
-                                        if(err){
-                                            console.log(err);
-                                        }else{
-                                            console.log('inserted successfully to orders');
-                                            connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_order_id`}, (err, arr) => {
-                                                if(err){
-                                                    console.log(err);
-                                                }else{
-                                                    console.log('last order id is saved to last_order_id variable.');
-                                                    connection.query({sql: `SELECT product_id, quantity, total FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
-                                                        if(err){
-                                                            console.log(err);
-                                                        }else{
-                                                            arr.forEach(e => {
-                                                                connection.query({sql: `INSERT INTO ordersproducts (order_id, product_id, quantity, total)
-                                                                VALUES (@last_order_id, ${e.product_id}, ${e.quantity}, ${e.total})`}, (err, arr) => {
+        connection.query({sql: `SELECT NOT EXISTS (SELECT cart_id FROM cart_items WHERE cart_id='${req.cookies.cart_id}') as isCartEmpty`}, (err, arr) => {
+            if(err){
+                console.log(err);
+            }else{
+                const isCartEmpty = arr[0].isCartEmpty;
+                if(isCartEmpty === 0){
+                    const first_name = req.body.c_fname;
+                    const last_name = req.body.c_lname;
+                    const email = req.body.c_email_address;
+                    const phone_number = req.body.c_phone;
+                    const neighborhood = req.body.c_neighborhood;
+                    const address = req.body.c_address;
+                    fetch(`https://turkiyeapi.dev/api/v1/neighborhoods/${neighborhood}`).then((response) => response.json()).then((data) => {
+                        // console.log(data.data.province);
+                        // console.log(data.data.district);
+                        // console.log(data.data.name);
+                        connection.query({sql: `INSERT INTO customers (first_name, last_name, email, phone_number) VALUES ('${first_name}', '${last_name}', '${email}', '${phone_number}')`}, (err, arr) => {
+                            if(err) {
+                                console.log(err);
+                            }else{
+                                console.log('inserted successfully to customers.');
+                                connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_customer_id`}, (err, arr) => {
+                                    if(err){
+                                        console.log(err);
+                                    }else{
+                                        console.log('last customer id is saved to last_customer_id variable.');
+                                        connection.query({sql: `INSERT INTO addresses (customer_id, city, district, neighborhood, address) 
+                                        VALUES(LAST_INSERT_ID(),'${data.data.province}', '${data.data.district}', '${data.data.name}', '${address}')`}, (err, arr) => {
+                                            if(err){
+                                                console.log(err);
+                                            }else{
+                                                console.log(`inserted successfully to address.`);
+                                                connection.query({sql: `INSERT INTO orders (customer_id, total_quantity, total_price, order_date)
+                                                VALUES (@last_customer_id, (SELECT SUM(quantity) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), (SELECT SUM(total) FROM cart_items WHERE cart_id='${req.cookies.cart_id}'), CURRENT_DATE())`}, (err, arr) => {
+                                                    if(err){
+                                                        console.log(err);
+                                                    }else{
+                                                        console.log('inserted successfully to orders');
+                                                        connection.query({sql: `SELECT LAST_INSERT_ID() INTO @last_order_id`}, (err, arr) => {
+                                                            if(err){
+                                                                console.log(err);
+                                                            }else{
+                                                                console.log('last order id is saved to last_order_id variable.');
+                                                                connection.query({sql: `SELECT product_id, quantity, total FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
                                                                     if(err){
                                                                         console.log(err);
                                                                     }else{
-                                                                        console.log('inserted to orderproducts successfully.');
-                                                                        connection.query({sql: `UPDATE products as p1 JOIN products as p2 ON p1.product_id=p2.product_id SET p1.stock_quantity=(p2.stock_quantity - ${e.quantity}) WHERE p1.product_id=${e.product_id}`}, (err, arr) => {
+                                                                        arr.forEach(e => {
+                                                                            connection.query({sql: `INSERT INTO ordersproducts (order_id, product_id, quantity, total)
+                                                                            VALUES (@last_order_id, ${e.product_id}, ${e.quantity}, ${e.total})`}, (err, arr) => {
+                                                                                if(err){
+                                                                                    console.log(err);
+                                                                                }else{
+                                                                                    console.log('inserted to orderproducts successfully.');
+                                                                                    connection.query({sql: `UPDATE products as p1 JOIN products as p2 ON p1.product_id=p2.product_id SET p1.stock_quantity=(p2.stock_quantity - ${e.quantity}) WHERE p1.product_id=${e.product_id}`}, (err, arr) => {
+                                                                                        if(err){
+                                                                                            console.log(err);
+                                                                                        }else{
+                                                                                            console.log('stock quantity updated on products table.');
+                                                                                        }
+                                                                                    });
+                                                                                }
+                                                                            });
+                                                                        });
+                                                                        connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
                                                                             if(err){
                                                                                 console.log(err);
                                                                             }else{
-                                                                                console.log('stock quantity updated on products table.');
+                                                                                console.log('cart_id with corresponding cookie successfully deleted.');
+                                                                                res.redirect('/thankyou');
                                                                             }
                                                                         });
                                                                     }
                                                                 });
-                                                            });
-                                                            connection.query({sql: `DELETE FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, arr) => {
-                                                                if(err){
-                                                                    console.log(err);
-                                                                }else{
-                                                                    console.log('cart_id with corresponding cookie successfully deleted.');
-                                                                    res.redirect('/thankyou');
-                                                                }
-                                                            });
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            })
-                        }
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
+                                        })
+                                    }
+                                });
+                            }
+                        });
                     });
+                }else{
+                    console.log('cart is empty, cannot make an order.');
+                    res.redirect('/checkout');
                 }
-            });
+            }
         });
     }else{
+        console.log('cookie expired.');
         res.redirect('/');
     }
 });
@@ -286,39 +299,8 @@ app.route('/checkout').get((req, res) => {
 app.route('/thankyou').get((req, res) => {
     res.render('thankyou');
 });
-
-
   
 app.listen(3000, '', (err) => {
     if(err) console.log(err);
     else console.log("Listening on port 3000.");
 });
-
-// app.route('/').get((req, res) =>{
-  //     connection.query({sql: "SELECT * FROM gonderiler"}, (err, results) => {
-  //         if(err) console.log(err);
-  //         else res.render("main", {test: results});
-  //     });
-  // }).post((req, res) => {
-  //     const newCityCode = parseInt(req.body.newCityCode);
-  //     const newCity = String(req.body.newCity);
-  //     connection.query({sql: `INSERT INTO sehirler (sehir_kodu, sehir_adi) VALUES (${newCityCode}, '${newCity}')`}, (err, results) => {
-  //         if(err) console.log(err);
-  //         else console.log('saved to sehirler table on mydb2.');
-  //     });
-  // });
-
-
-  // if(!req.cookies.cart_id){
-    //         var i = 1;
-    //         connection.query({sql: `SELECT cart_item_id FROM cart_items`}, (err, arr) => {
-    //         if(err){
-    //             console.log(err);
-    //         }
-    //         else{
-    //             for (let index = 0; index < arr.length; index++) {
-    //                 if(arr.includes(i)) i++;
-    //             }
-    //         }
-    //     });
-    // }
