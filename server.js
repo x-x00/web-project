@@ -14,9 +14,9 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: address city, district... , delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
+//TODO: delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
 // database check ( normalization... ), composite key oluyormus... (bookmark a bak.), script for validating email and phonenumber, dynamically update the page.
-// payment, city (get le yolla, digerlirine de post la alip tekrar gonder ?) cookie ile token ?
+// payment(with test cards), required fields, product details page (custom routes?).
 
 // app.use(session({
 //     secret: 'mysecretkey',
