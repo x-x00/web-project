@@ -14,9 +14,11 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-//TODO: delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
-// database check ( normalization... ), composite key oluyormus... (bookmark a bak.), dynamically update the page.
-// payment(with test cards), product details page (custom routes?), check customers who has a cookie but nothing in the cart.
+/*
+ TODO: `delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
+ dynamically update the page(ajax). create key based on something rather than auto incremanting. host on cloud.
+ payment(with test cards), product details page (custom routes?), adjust code (do things in database rather than here?(sql while, case, exists...))
+*/
 
 // app.use(session({
 //     secret: 'mysecretkey',
@@ -51,7 +53,6 @@ app.route('/').get((req, res) => {
         const cookie = uuidv4();
         res.cookie('cart_id', cookie, {expires: new Date(Date.now() + 100000)}); // 100 seconds, 1 minute and 40 seconds.
     }
-    
 }).post((req, res) => {
     const selectedProductID = req.body.selectedProductID;
     const selectedProductPrice = parseInt(req.body.selectedProductPrice);

@@ -105,18 +105,18 @@
 		            <div class="form-group row">
 		              <div class="col-md-6">
 		                <label for="c_fname" class="text-black">First Name <span class="text-danger">*</span></label>
-		                <input required type="text" class="form-control" id="c_fname" name="c_fname">
+		                <input type="text" class="form-control" id="c_fname" name="c_fname" required>
 		              </div>
 		              <div class="col-md-6">
 		                <label for="c_lname" class="text-black">Last Name <span class="text-danger">*</span></label>
-		                <input required type="text" class="form-control" id="c_lname" name="c_lname">
+		                <input type="text" class="form-control" id="c_lname" name="c_lname" required>
 		              </div>
 		            </div>
 
 					<div class="form-group row">
 						<div class="col-md-12">
 						  <label for="c_city" class="text-black">City <span class="text-danger">*</span></label>
-						  <select required class="form-control" name="c_city" id="c_city" onchange="loadDistricts(this);">
+						  <select class="form-control" name="c_city" id="c_city" onchange="loadDistricts(this);" required>
 							<option value="">Choose a City</option>
 						  </select>
 						  <!-- <input type="text" class="form-control" id="c_city" name="c_city"> -->
@@ -126,14 +126,14 @@
 					  <div class="form-group row">
 						<div class="col-md-6">
 						  <label for="c_district" class="text-black">District <span class="text-danger">*</span></label>
-						  <select required class="form-control" name="c_district" id="c_district" onchange="loadNeighborhoods(this);">
+						  <select class="form-control" name="c_district" id="c_district" onchange="loadNeighborhoods(this);" required>
 							<option value="">Choose a District</option>
 						  </select>
 						  <!-- <input type="text" class="form-control" id="c_district" name="c_district"> -->
 						</div>
 						<div class="col-md-6">
 						  <label for="c_neighborhood" class="text-black">Neighborhood <span class="text-danger">*</span></label>
-						  <select required class="form-control" name="c_neighborhood" id="c_neighborhood">
+						  <select class="form-control" name="c_neighborhood" id="c_neighborhood" required>
 							<option value="">Choose a Neighborhood</option>
 						  </select>
 						  <!-- <input type="text" class="form-control" id="c_neighborhood" name="c_neighborhood"> -->
@@ -143,18 +143,18 @@
 		            <div class="form-group row">
 		              <div class="col-md-12">
 		                <label for="c_address" class="text-black">Address <span class="text-danger">*</span></label>
-		                <input required type="text" class="form-control" id="c_address" name="c_address" placeholder="Building name, Outdoor number, Indoor number...">
+		                <input type="text" class="form-control" id="c_address" name="c_address" placeholder="Building name, Outdoor number, Indoor number..." required>
 		              </div>
 		            </div>
 
 		            <div class="form-group row mb-5">
 		              <div class="col-md-6">
 		                <label for="c_email_address" class="text-black">Email Address <span class="text-danger">*</span></label>
-		                <input required type="email" class="form-control" id="c_email_address" name="c_email_address" placeholder="example@mywebsite.com">
+		                <input type="email" class="form-control" id="c_email_address" name="c_email_address" placeholder="example@mywebsite.com" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" required>
 		              </div>
 		              <div class="col-md-6">
 		                <label for="c_phone" class="text-black">Phone <span class="text-danger">*</span></label>
-		                <input required type="tel" class="form-control" id="c_phone" name="c_phone" placeholder="0(xxx)-xxx-xxxx" pattern="0[0-9]{3}[0-9]{3}[0-9]{4}">
+		                <input type="tel" class="form-control" id="c_phone" name="c_phone" placeholder="(xxx)-xxx-xxxx" pattern="[0-9]{10}" required>
 		              </div>
 		            </div>
 
