@@ -1,5 +1,5 @@
 
-# phone-shop (still in development)
+# phone-shop
 
 A website for selling phones. You can check the website here http://16.170.216.218/ ( hosted on the cloud with AWS )
 
