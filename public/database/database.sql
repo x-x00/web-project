@@ -105,12 +105,24 @@ COMMIT;
 INSERT INTO brands (brand) VALUES 
 ('iPhone'), ('Samsung'), ('Realme');
 
+INSERT INTO brands (brand) VALUES 
+('OnePlus'), ('OPPO'), ('Vivo'), ('Xiaomi');
+
 INSERT INTO products (brand_id, model, price, image, stock_quantity) VALUES 
 (1, 'X', 12000, 'images/iPhone-X.jpg', 20),
 (1, '14', 52000, 'images/iPhone-14.jpg', 10),
 (2, 'S22', 22000, 'images/Samsung-S22.jpg', 30),
 (2, 'A52', 16000, 'images/Samsung-A52.jpg', 25),
 (3, '12', 10000, 'images/Realme-12.jpg', 40);
+
+INSERT INTO products (brand_id, model, price, image, stock_quantity) VALUES 
+(1, '11', 25000, 'images/iPhone-11.jpg', 15),
+(4, '11', 45000, 'images/OnePlus-11.jpg', 10),
+(5, 'A54', 9500, 'images/OPPO-A54.jpg', 50),
+(2, 'Galaxy Note 10+', 35000, 'images/Samsung-GalaxyNote10Plus.jpg', 25),
+(6, 'Y33s', 8300, 'images/Vivo-Y33s.jpg', 40),
+(7, 'Mi 11', 34000, 'images/Xiaomi-Mi-11.jpg', 20),
+(7, 'Redmi Note 10', 10000, 'images/Xiaomi-RedmiNote10.jpg', 100);
 
 INSERT INTO cart_items (product_id, quantity, total) VALUES 
 ();

@@ -2,7 +2,6 @@ const mysql = require('mysql2');
 const express = require('express');
 const ejs = require('ejs');
 const bodyParser = require("body-parser");
-const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config()
@@ -16,16 +15,9 @@ app.use(express.static("public"));
 
 /*
  TODO: `delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
- dynamically update the page(ajax). create key based on something rather than auto incremanting. host on cloud.
- payment(with test cards), product details page (custom routes?), adjust code (do things in database rather than here?(sql while, case, exists...))
+ dynamically update the page(ajax). create key based on something rather than auto incremanting.
+ payment(with test cards), product details page (route parameters?), adjust code (do things in database rather than here?(sql while, case, exists...))
 */
-
-// app.use(session({
-//     secret: 'mysecretkey',
-//     resave: false,
-//     saveUninitialized: true,
-//     cookie: { maxAge: 600000 } // session timeout of 600 seconds
-//   }));
 
 app.use(cookieParser());
 
@@ -213,9 +205,6 @@ app.route('/checkout').get((req, res) => {
                     const neighborhood = req.body.c_neighborhood;
                     const address = req.body.c_address;
                     fetch(`https://turkiyeapi.dev/api/v1/neighborhoods/${neighborhood}`).then((response) => response.json()).then((data) => {
-                        // console.log(data.data.province);
-                        // console.log(data.data.district);
-                        // console.log(data.data.name);
                         connection.query({sql: `INSERT INTO customers (first_name, last_name, email, phone_number) VALUES ('${first_name}', '${last_name}', '${email}', '${phone_number}')`}, (err, arr) => {
                             if(err) {
                                 console.log(err);
