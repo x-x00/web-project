@@ -36,8 +36,22 @@ connection.connect((err) => {
 
 app.route('/').get((req, res) => {
     connection.query({sql: `SELECT products.product_id as id, CONCAT(brands.brand, ' ', products.model) as title, CONCAT(products.price, ' TL') as price, products.image FROM brands JOIN products ON brands.brand_id=products.brand_id`}, (err, products) => {
-        if(err) console.log(err);
-        else res.render('shop', {products: products});
+        if(err) {
+            console.log(err);
+        }
+        else {
+            connection.query({sql: `SELECT CASE
+            WHEN SUM(quantity) IS NULL THEN 0
+            ELSE SUM(quantity)
+            END as cart_quantity
+            FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, cart_quantity) => {
+                if(err) {
+                    console.log(err);
+                }else{
+                    res.render('shop', {products: products, cart_quantity: cart_quantity[0].cart_quantity});
+                }
+            });
+        }
     });
     if(!req.cookies.cart_id){
         //implement something to delete cart_items having an expired cookie, or create a script with python that deletes cart_items
@@ -119,8 +133,21 @@ app.route('/cart').get((req, res) => {
         }
         else {
             connection.query({sql: `SELECT CONCAT(SUM(total), ' ', 'TL') as total_price FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, totalPrice) => {
-                if(err) console.log(err);
-                else res.render('cart', {cartItems: cartItems, totalPrice: totalPrice[0].total_price});
+                if(err) {
+                    console.log(err);
+                }else{
+                    connection.query({sql: `SELECT CASE
+                    WHEN SUM(quantity) IS NULL THEN 0
+                    ELSE SUM(quantity)
+                    END as cart_quantity
+                    FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, cart_quantity) => {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            res.render('cart', {cartItems: cartItems, totalPrice: totalPrice[0].total_price, cart_quantity: cart_quantity[0].cart_quantity});
+                        }
+                    });
+                } 
             });
         }
     });
@@ -185,8 +212,21 @@ app.route('/checkout').get((req, res) => {
         }
         else {
             connection.query({sql: `SELECT CONCAT(SUM(total), ' ', 'TL') as total_price FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, totalPrice) => {
-                if(err) console.log(err);
-                else res.render('checkout', {cartItems: cartItems, totalPrice: totalPrice[0].total_price});
+                if(err) {
+                    console.log(err);
+                }else{
+                    connection.query({sql: `SELECT CASE
+                    WHEN SUM(quantity) IS NULL THEN 0
+                    ELSE SUM(quantity)
+                    END as cart_quantity
+                    FROM cart_items WHERE cart_id='${req.cookies.cart_id}'`}, (err, cart_quantity) => {
+                        if(err){
+                            console.log(err);
+                        }else{
+                            res.render('checkout', {cartItems: cartItems, totalPrice: totalPrice[0].total_price, cart_quantity: cart_quantity[0].cart_quantity});
+                        }
+                    });
+                }
             });
         }
     });
