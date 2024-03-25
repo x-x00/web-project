@@ -15,7 +15,7 @@ app.use(express.static("public"));
 
 /*
  TODO: `delete expired cookie cart or delete with date (add date to cart items table for this. )(check / for details),
- dynamically update the page(ajax). create key based on something rather than auto incremanting.
+ dynamically update the page(ajax). create key based on something rather than auto incremanting.adsfads
  payment(with test cards), product details page (route parameters?), adjust code (do things in database rather than here?(sql while, case, exists...))
 */
 
