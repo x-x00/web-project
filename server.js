@@ -96,6 +96,7 @@ app.route('/').get((req, res) => {
                                 });
                             }else{
                                 console.log('Cant exceed stock.');
+                                res.redirect('/');
                             }
                         });
                     }else{
