@@ -15,12 +15,10 @@ A website for selling phones. You can check the website here http://16.170.216.2
 
 ## ER Diagram
 
-![Database for Project](https://github.com/x-x00/web-project/assets/154417035/8f9f613a-66f3-4e29-9753-0276cfef5853)
+![Database for Project](https://github.com/x-x00/web-project/assets/154417035/c403dd48-b86c-4d99-b2d8-59bb97907f3c)
 
 
 ## Acknowledgements
 
  - [ThemeWagon](https://themewagon.com/themes/furni-online-store/)
  - [TurkiyeAPI](https://turkiyeapi.dev/)
-
-
