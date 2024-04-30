@@ -10,16 +10,6 @@ CREATE TABLE customers(
     PRIMARY KEY(customer_id));
     
 CREATE TABLE addresses(
-    address_id INT NOT NULL AUTO_INCREMENT,
-    customer_id INT NOT NULL,
-    city VARCHAR(20) NOT NULL,
-    district VARCHAR(20) NOT NULL,
-    neighborhood VARCHAR(20) NOT NULL,
-    address VARCHAR(120) NOT NULL,
-    PRIMARY KEY(address_id, customer_id),
-    FOREIGN KEY (customer_id) REFERENCES customers(customer_id));
-    
-CREATE TABLE addresses(
     customer_id INT NOT NULL,
     city VARCHAR(20) NOT NULL,
     district VARCHAR(20) NOT NULL,
@@ -43,15 +33,6 @@ CREATE TABLE products(
     stock_quantity INT NOT NULL,
     PRIMARY KEY(product_id),
     FOREIGN KEY (brand_id) REFERENCES brands(brand_id));
-    
-CREATE TABLE cart_items(
-	cart_item_id INT NOT NULL AUTO_INCREMENT,
-	cart_id VARCHAR(40) NOT NULL,
-    product_id INT NOT NULL,
-    quantity INT NOT NULL,
-    total INT NOT NULL,
-    PRIMARY KEY(cart_item_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id));
     
 CREATE TABLE cart_items(
 	cart_id VARCHAR(40) NOT NULL,
@@ -140,6 +121,12 @@ SELECT * from brands;
 SELECT * from products;
 
 SELECT * FROM cart_items;
+
+SELECT CASE
+WHEN SUM(quantity) IS NULL THEN 0
+ELSE SUM(quantity)
+END as cart_quantity
+FROM cart_items WHERE cart_id='';
 
 SELECT NOT EXISTS (SELECT cart_id FROM cart_items WHERE cart_id='1') as isCartEmpty;
 
